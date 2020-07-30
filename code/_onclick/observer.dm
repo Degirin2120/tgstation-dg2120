@@ -4,7 +4,7 @@
 
 	if(can_reenter_corpse && mind && mind.current)
 		if(A == mind.current || (mind.current in A)) // double click your corpse or whatever holds it
-			reenter_corpse()						// (cloning scanner, body bag, closet, mech, etc)
+			reenter_corpse()						// (body bag, closet, mech, etc)
 			return									// seems legit.
 
 	// Things you might plausibly want to follow
@@ -53,7 +53,7 @@
 	if(user.client)
 		if(user.gas_scan && atmosanalyzer_scan(user, src))
 			return TRUE
-		else if(IsAdminGhost(user))
+		else if(isAdminGhostAI(user))
 			attack_ai(user)
 		else if(user.client.prefs.inquisitive_ghost)
 			user.examinate(src)
