@@ -166,7 +166,7 @@
 				It can cook multiple items at once.
 
 				<h2>Processor:</h2>
-				Use it to process certain ingredients (meat into meatballs, doughslice into spaghetti, potato into fries,etc...)
+				Use it to process certain ingredients (meat into meatball, doughslice into spaghetti, potato into fries,etc...)
 
 				<h2>Gibber:</h2>
 				Stuff an animal in it to grind it into meat.
@@ -369,6 +369,13 @@
 	author = "Dr. H.P. Kritz"
 	title = "Mentoring your Experiments"
 	page_link = "Experimentor"
+
+/obj/item/book/manual/wiki/medical_cloning
+	name = "Cloning techniques of the 26th century"
+	icon_state ="bookCloning"
+	author = "Medical Journal, volume 3"
+	title = "Cloning techniques of the 26th century"
+	page_link = "Guide_to_genetics#Cloning"
 
 /obj/item/book/manual/wiki/cooking_to_serve_man
 	name = "To Serve Man"

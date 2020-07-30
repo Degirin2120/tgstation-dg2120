@@ -193,6 +193,8 @@
 
 /datum/config_entry/flag/revival_pod_plants
 
+/datum/config_entry/flag/revival_cloning
+
 /datum/config_entry/number/revival_brain_life
 	config_entry_value = -1
 	integer = FALSE
