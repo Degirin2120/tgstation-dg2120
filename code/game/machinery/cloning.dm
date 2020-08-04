@@ -71,7 +71,7 @@
 /obj/machinery/clonepod/RefreshParts()
 	speed_coeff = 0
 	efficiency = 0
-	reagents.maximum_volume = 0
+	reagents.maximum_volume = 800
 	fleshamnt = 1
 	for(var/obj/item/reagent_containers/glass/G in component_parts)
 		reagents.maximum_volume += G.volume
@@ -93,48 +93,41 @@
 		return
 	user.examinate(src)
 
-/obj/machinery/clonepod/AltClick(mob/user)
-	. = ..()
-	if (alert(user, "Are you sure you want to empty the cloning pod?", "Empty Reagent Storage:", "Yes", "No") != "Yes")
-		return
-	to_chat(user, "<span class='notice'>You empty \the [src]'s release valve onto the floor.</span>")
-//	reagents.reaction(user.loc)
-	src.reagents.clear_reagents()
-
-/obj/machinery/clonepod/attack_ai(mob/user)
-	return attack_hand(user)
-
 /obj/machinery/clonepod/attack_ai(mob/user)
 	return attack_hand(user)
 
 /obj/machinery/clonepod/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>The <i>linking</i> device can be <i>scanned<i> with a multitool.</span>"
 	. += "<span class='notice'>The <i>linking</i> device can be <i>scanned<i> with a multitool. It can be emptied by Alt-Clicking it.</span>"
 	if(in_range(user, src) || isobserver(user))
 		. += "<span class='notice'>The status display reads: Cloning speed at <b>[speed_coeff*50]%</b>.<br>Predicted amount of cellular damage: <b>[100-heal_level]%</b><br> Storing up to <b>[reagents.maximum_volume]cm<sup>3</sup></b> of synthflesh.<br>"
 		. += "Synthflesh consumption at <b>[round(fleshamnt*90, 1)]cm<sup>3</sup></b> per clone.</span><br>"
 		. += "<span class='notice'>The reagent display reads: [round(reagents.total_volume, 1)] / [reagents.maximum_volume] cm<sup>3</sup></span>"
 		if(efficiency > 5)
-			. += "<span class='notice'>Pod has been upgraded to apply beneficial mutations.</span>"
+			. += "<span class='notice'>Pod has been upgraded to support autoprocessing and apply beneficial mutations.<span>"
 
 /*
-/obj/item/disk/data/cloning
+//The return of data disks?? Just for transferring between genetics machine/cloning machine.
+//TO-DO: Make the genetics machine accept them.
+/obj/item/disk/data
 	name = "cloning data disk"
-	icon_state = "datadisk0"
+	icon_state = "datadisk0" //Gosh I hope syndies don't mistake them for the nuke disk.
 	var/list/fields = list()
+	var/list/mutations = list()
+	var/max_mutations = 6
+	var/read_only = FALSE //Well,it's still a floppy disk
 
 //Disk stuff.
-/obj/item/disk/data/cloning/Initialize()
+/obj/item/disk/data/Initialize()
 	. = ..()
 	icon_state = "datadisk[rand(0,6)]"
 	add_overlay("datadisk_gene")
 
-/obj/item/disk/data/cloning/attack_self(mob/user)
+/obj/item/disk/data/attack_self(mob/user)
 	read_only = !read_only
 	to_chat(user, "<span class='notice'>You flip the write-protect tab to [read_only ? "protected" : "unprotected"].</span>")
 
-/obj/item/disk/data/cloning/examine(mob/user)
+/obj/item/disk/data/examine(mob/user)
 	. = ..()
 	. += "The write-protect tab is set to [read_only ? "protected" : "unprotected"]."
 */
@@ -169,14 +162,15 @@
 	return examine(user)
 
 //Start growing a human clone in the pod!
-/obj/machinery/clonepod/proc/growclone(clonename, ui, mutation_index, mindref, blood_type, datum/species/mrace, list/features, factions, list/quirks, datum/bank_account/insurance, list/traumas, empty)
+/obj/machinery/clonepod/proc/growclone(clonename, ui, mutation_index, mindref, datum/species/mrace, list/features, factions, list/quirks, datum/bank_account/insurance, list/traumas, empty)
 	if(!reagents.has_reagent(/datum/reagent/medicine/c2/synthflesh, fleshamnt))
-		connected_message("Cannot start cloning: Not enough Synthflesh.")
+		connected_message("Cannot start cloning: Not enough synthflesh.")
 		return NONE
 	if(panel_open)
 		return NONE
 	if(mess || attempting)
 		return NONE
+
 	if(!empty) //Doesn't matter if we're just making a copy
 		clonemind = locate(mindref) in SSticker.minds
 		if(!istype(clonemind))	//not a mind
@@ -205,7 +199,7 @@
 
 	var/mob/living/carbon/human/H = new /mob/living/carbon/human(src)
 
-	H.hardset_dna(ui, mutation_index, H.real_name, blood_type, mrace, features)
+	H.hardset_dna(ui, mutation_index, H.real_name, null, mrace, features)
 
 	if(!HAS_TRAIT(H, TRAIT_RADIMMUNE))//dont apply mutations if the species is Mutation proof.
 		if(efficiency > 2)
@@ -284,6 +278,7 @@
 			connected_message("Clone Ejected: Not enough material.")
 			if(internal_radio)
 				SPEAK("The cloning of [mob_occupant.real_name] has been ended prematurely due to insufficient material.")
+
 		if(mob_occupant && (mob_occupant.stat == DEAD) || (mob_occupant.suiciding) || mob_occupant.hellbound)  //Autoeject corpses and suiciding dudes.
 			connected_message("Clone Rejected: Deceased.")
 			if(internal_radio)
@@ -446,7 +441,6 @@
 		to_chat(occupant, "<span class='notice'><b>There is a bright flash!</b><br><i>You feel like a new being.</i></span>")
 		mob_occupant.flash_act()
 
-
 	occupant.forceMove(T)
 	icon_state = "pod_0"
 	mob_occupant.domutcheck(1) //Waiting until they're out before possible monkeyizing. The 1 argument forces powers to manifest.
@@ -455,6 +449,7 @@
 	unattached_flesh.Cut()
 
 	occupant = null
+	clonemind = null
 
 /obj/machinery/clonepod/relaymove(mob/user)
 	container_resist(user)
@@ -487,7 +482,7 @@
 
 /obj/machinery/clonepod/proc/horrifyingsound()
 	for(var/i in 1 to 5)
-		playsound(src,pick('sound/hallucinations/growl1.ogg','sound/hallucinations/growl2.ogg','sound/hallucinations/growl3.ogg'), 100, (rand(95,105) * 0.01))
+		playsound(src,pick('sound/hallucinations/growl1.ogg','sound/hallucinations/growl2.ogg','sound/hallucinations/growl3.ogg'), 100, rand(0.95,1.05))
 		sleep(1)
 	sleep(10)
 	playsound(src,'sound/hallucinations/wail.ogg', 100, TRUE)
@@ -532,14 +527,13 @@
 		organ.forceMove(src)
 		unattached_flesh += organ
 
-
 	flesh_number = unattached_flesh.len
 
 /obj/machinery/clonepod/prefilled
 
 /obj/machinery/clonepod/prefilled/Initialize()
 	. = ..()
-	reagents.add_reagent(/datum/reagent/medicine/c2/synthflesh, 800)
+	reagents.add_reagent(/datum/reagent/medicine/c2/synthflesh, 100)
 
 /*
  *	Manual -- A big ol' manual.
