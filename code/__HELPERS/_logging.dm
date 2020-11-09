@@ -202,6 +202,9 @@
 /proc/log_mapping(text)
 	WRITE_LOG(GLOB.world_map_error_log, text)
 
+/proc/log_perf(list/perf_info)
+	WRITE_LOG_NO_FORMAT(GLOB.perf_log, perf_info.Join(","))
+
 /**
  * Appends a tgui-related log entry. All arguments are optional.
  */
@@ -224,7 +227,7 @@
 	else if(window)
 		entry += " in [window.id]"
 	// Resolve src_object
-	if(!src_object && window && window.locked_by)
+	if(!src_object && window?.locked_by)
 		src_object = window.locked_by.src_object
 	// Insert src_object info
 	if(src_object)
@@ -299,7 +302,7 @@
 		include_link = FALSE
 
 	if(key)
-		if(C && C.holder && C.holder.fakekey && !include_name)
+		if(C?.holder && C.holder.fakekey && !include_name)
 			if(include_link)
 				. += "<a href='?priv_msg=[C.findStealthKey()]'>"
 			. += "Administrator"

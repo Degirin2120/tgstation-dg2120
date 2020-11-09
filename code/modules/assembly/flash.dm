@@ -152,7 +152,6 @@
 	if(deviation == DEVIATION_FULL && !converter)
 		return
 
-
 	if(targeted)
 		if(M.flash_act(1, 1))
 			if(M.get_confusion() < power)
@@ -195,6 +194,12 @@
   * * attacker - Attacker
   */
 /obj/item/assembly/flash/proc/calculate_deviation(mob/victim, atom/attacker)
+	// Tactical combat emote-spinning should not counter intended gameplay mechanics.
+	// This trumps same-loc checks to discourage floor spinning in general to counter flashes.
+	// In short, combat spinning is silly and you should feel silly for doing it.
+	if(victim.flags_1 & IS_SPINNING_1)
+		return DEVIATION_NONE
+
 	// Are they on the same tile? We'll return partial deviation. This may be someone flashing while lying down
 	// or flashing someone they're stood on the same turf as, or a borg flashing someone buckled to them.
 	if(victim.loc == attacker.loc)
@@ -325,7 +330,7 @@
 	var/obj/item/organ/cyberimp/arm/flash/I = null
 
 /obj/item/assembly/flash/armimplant/burn_out()
-	if(I && I.owner)
+	if(I?.owner)
 		to_chat(I.owner, "<span class='warning'>Your photon projector implant overheats and deactivates!</span>")
 		I.Retract()
 	overheat = TRUE
@@ -333,7 +338,7 @@
 
 /obj/item/assembly/flash/armimplant/try_use_flash(mob/user = null)
 	if(overheat)
-		if(I && I.owner)
+		if(I?.owner)
 			to_chat(I.owner, "<span class='warning'>Your photon projector is running too hot to be used again so quickly!</span>")
 		return FALSE
 	overheat = TRUE

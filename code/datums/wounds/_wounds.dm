@@ -137,7 +137,7 @@
 		linked_status_effect = victim.apply_status_effect(status_effect_type, src)
 	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
 	if(!victim.alerts["wound"]) // only one alert is shared between all of the wounds
-		victim.throw_alert("wound", /obj/screen/alert/status_effect/wound)
+		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
 
 	var/demoted
 	if(old_wound)
@@ -255,7 +255,7 @@
   */
 /datum/wound/proc/try_treating(obj/item/I, mob/user)
 	// first we weed out if we're not dealing with our wound's bodypart, or if it might be an attack
-	if(!I || limb.body_zone != user.zone_selected || (I.force && user.a_intent != INTENT_HELP))
+	if(QDELETED(I) || limb.body_zone != user.zone_selected || (I.force && user.a_intent != INTENT_HELP))
 		return FALSE
 
 	var/allowed = FALSE
